@@ -249,5 +249,5 @@ return [
   |A link to the projects github repository
   |
   */
-    'githubUrl' => 'https://github.com/dianebainbridge/p3',
+    'githubUrl' => 'https://github.com/dianebainbridge/p4',
 ];
