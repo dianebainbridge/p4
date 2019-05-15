@@ -28,7 +28,7 @@
             </div>
             <div class="form-group">
                 <label for='remember'>Remember Me</label>
-                <input type='checkbox' name='remember' {{ old('remember') ? 'checked' : '' }}>
+                <input type='checkbox' id="remember" name='remember' {{ old('remember') ? 'checked' : '' }}>
             </div>
             <div class="form-group">
                 <button type='submit' class='btn btn-primary'>Login</button>
