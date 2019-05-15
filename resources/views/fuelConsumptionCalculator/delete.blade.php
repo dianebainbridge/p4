@@ -2,10 +2,10 @@
 
     @section('title')
     Login
-@endsection
+            @endsection
 
-@section('title')
-    Confirm deletion: {{ $fuelLogEntry->fillup_date }}
+            @section('title')
+            Confirm deletion: {{ $fuelLogEntry->fillup_date }}
 @endsection
 
 @section('content')

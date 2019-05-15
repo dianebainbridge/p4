@@ -14,26 +14,18 @@ class FuelLogEntry extends Model
 
     public function getFuelConsumed()
     {
-        $distance =(float)number_format($this->end_distance - $this->start_distance, 1, '.', '');
-        return  (float)number_format($distance / $this->fuel_volume, 1, '.', '');
-    }
-
-    public function getFuelConsumption()
-    {
-        $distance =(float)number_format($this->end_distance - $this->start_distance, 1, '.', '');
-        $fuel_consumed = (float)number_format($distance / $this->fuel_volume, 1, '.', '');
-        $fuel_consumption = $fuel_consumed." ".$this->distance_units."/".$this->fuel_units;
-        return $fuel_consumption;
+        $distance = (float)number_format($this->end_distance - $this->start_distance, 1, '.', '');
+        return (float)number_format($distance / $this->fuel_volume, 1, '.', '');
     }
 
     public function getDistance()
     {
-        return $this->distance." ".$this->distance_units;
+        return $this->distance . " " . $this->distance_units;
     }
 
     public function getFuel()
     {
-        return $this->fuel_volume." ".$this->fuel_units."s";
+        return $this->fuel_volume . " " . $this->fuel_units . "s";
     }
 
 

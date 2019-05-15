@@ -31,6 +31,14 @@
             <form method='POST' action='/fuelConsumptionCalculator/form-process'>
                 @csrf
                 <div class="form-group">
+                    <i class="fas fa-calendar-day"></i><!--fontawesome kind of odometer icon-->
+                    <label for="fillupDate">Date of fill-up </label>
+                    <input id="fillupDate" name="fillupDate" type="date"
+                           value="{{ old('fillupDate',$fillupDate) }}"/>
+                    {{-- Display the first error if there are any fof this input --}}
+                    @include('includes.error-field', ['fieldName' => 'fillupDate'])
+                </div>
+                <div class="form-group">
                     <i class="fas fa-tachometer-alt"></i><!--fontawesome kind of odometer icon-->
                     <label for="startDistance">Odometer reading - last fill-up </label>
                     <input id="startDistance" name="startDistance" type="number"
@@ -41,59 +49,48 @@
                 <div class="form-group">
                     <i class="fas fa-tachometer-alt"></i>
                     <label for="endDistance">Odometer reading - this fill-up </label>
-                    <input id="endDistance" name="endDistance" type="number" value="{{ old('endDistance') }}"/>
+                    <input id="endDistance" name="endDistance" type="number"
+                           value="{{ old('endDistance',$endDistance) }}"/>
                     {{-- Display the first error if there are any fof this input --}}
-                    @if($errors->get('endDistance'))
-                        <div class='error'>{{ $errors->first('endDistance') }}</div>
-                    @endif
+                    @include('includes.error-field', ['fieldName' => 'endDistance'])
                 </div>
                 <div class="form-group">
                     Select miles or kilometers
                     <br/>
                     <label class="radio-inline" for="miles">
                         <input type="radio" name="distanceUnit" value="miles" id="miles"
-                               {{-- If the old value i "miles" check this radio input--}}
-                               @if (old('distanceUnit')=="miles")
-                               checked="checked"
-                                @endif
+                                {{-- If the old value i "miles" check this radio input--}}
+                                {{(old('distanceUnit',$distanceUnit)=="miles") ? 'checked' : '' }}
                         >Miles
                     </label>
                     <label class="radio-inline" for="kilometers">
                         <input type="radio" id="kilometers" name="distanceUnit" value="kilometers"
-                               {{-- If the old value i "kilometers" check this radio input--}}
-                               @if (old('distanceUnit')=="kilometers")
-                               checked="checked"
-                                @endif
+                                {{-- If the old value i "kilometers" check this radio input--}}
+                                {{(old('distanceUnit',$distanceUnit)=="kilometers") ? 'checked' : '' }}
                         >Kilometers
                     </label>
                     {{-- Display the first error if there are any fof this input --}}
-                    @if($errors->get('distanceUnit'))
-                        <div class='error'>{{ $errors->first('distanceUnit') }}</div>
-                    @endif
+                    @include('includes.error-field', ['fieldName' => 'distanceUnit'])
                 </div>
                 <div class="form-group">
                     <i class="fas fa-gas-pump"></i>
                     <label for="fuelVolume">Fuel Reading from Gas Pump </label>
-                    <input id="fuelVolume" name="fuelVolume" type="text" value="{{old('fuelVolume')}}"/>
-                    @if($errors->get('fuelVolume'))
-                        <div class='error'>{{ $errors->first('fuelVolume') }}</div>
-                    @endif
+                    <input id="fuelVolume" name="fuelVolume" type="text" value="{{old('fuelVolume',$fuelVolume) }}"/>
+                    @include('includes.error-field', ['fieldName' => 'fuelVolume'])
                 </div>
                 <div class="form-group">
                     <label for="volumeUnit">Select option</label>
                     <select id="volumeUnit" name="volumeUnit" class="custom-select volumeUnit">
                         <option value="">&#160;</option>
-                        <option value="gallon" {{old('volumeUnit')=="gallon"  ? 'selected' : ''}}>
+                        <option value="gallon" {{ (old('volumeUnit',$volumeUnit)=="gallon") ? 'selected' : '' }} >
                             Gallons
                         </option>
-                        <option value="liter" {{old('volumeUnit')=="liter" ? 'selected': ''}}>
+                        <option value="liter" {{old('volumeUnit',$volumeUnit)=="liter" ? 'selected': ''}}>
                             Liters
                         </option>
                     </select>
                     {{-- Display the first error if there are any fof this input --}}
-                    @if($errors->get('volumeUnit'))
-                        <div class='error'>{{ $errors->first('volumeUnit') }}</div>
-                    @endif
+                    @include('includes.error-field', ['fieldName' => 'volumeUnit'])
                 </div>
                 {{-- Only logged in users can save to database --}}
                 @if($logged_in_user != null)

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
 use App;
 use App\FuelLogEntry;
-use Carbon\Carbon;
 use App\Exports\FuelLogEntriesExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Actions\FuelLogEntry\LastDistanceEntered;
+use App\Actions\FuelLogEntry\StoreFuelLogEntry;
+use App\Actions\FuelLogEntry\UpdateFuelLogEntry;
+use App\Actions\FuelLogEntry\FuelConsumptionCalculation;
 
 class FuelLogEntryController extends Controller
 {
@@ -18,7 +21,7 @@ class FuelLogEntryController extends Controller
     */
     public function index()
     {
-        #View the form
+        # View the form
         return redirect('fuelConsumptionCalculator.form');
     }
 
@@ -28,27 +31,26 @@ class FuelLogEntryController extends Controller
     public function showForm(Request $request)
     {
         # set variables from session or use defaults
-        $startDistance = $request->session()->get('startDistance', 0);
-        $endDistance = $request->session()->get('endDistance', 0);
-        $fuelVolume = $request->session()->get('fuelVolume', 0);
+        $fillupDate = $request->session()->get('fillupDate', '');
+        $startDistance = $request->session()->get('startDistance', '');
+        $endDistance = $request->session()->get('endDistance', '');
+        $fuelVolume = $request->session()->get('fuelVolume', '');
         $distanceUnit = $request->session()->get('distanceUnit', '');
         $volumeUnit = $request->session()->get('volumeUnit', '');
-        $fuelConsumed = $request->session()->get('fuelConsumed', 0);
-        $distance = $request->session()->get('distance', 0);
+        $fuelConsumed = $request->session()->get('fuelConsumed', '');
+        $distance = $request->session()->get('distance', '');
 
-        #if the user is logged in get the last entered end distance as the default start distance
-        $lastEndDistance = '';
+        # if the user is logged in get the last entered end distance as the default start distance
         $user = $request->user();
-        if ($user != null) {
-            $lastEndDistance = FuelLogEntry::where('user_id', '=', $user->id)->orderBy('created_at', 'desc')->limit(1)->pluck('end_distance');
-            //dd($lastEndDistance);
-            if(count($lastEndDistance)>0)
-                $lastEndDistance = $lastEndDistance[0];
-        }
-        $startDistance = $lastEndDistance;
 
-        #return the form view with these value
+        if (!is_null($user)) {
+            $action = new LastDistanceEntered($user);
+            $startDistance = $action->getLastEndDistance();
+        }
+
+        # return the form view with these value
         return view('fuelConsumptionCalculator.form')->with([
+            'fillupDate' => $fillupDate,
             'startDistance' => $startDistance,
             'endDistance' => $endDistance,
             'fuelVolume' => $fuelVolume,
@@ -67,6 +69,7 @@ class FuelLogEntryController extends Controller
     {
         # Validate the form request
         $request->validate([
+            'fillupDate' => 'required|date',
             'startDistance' => 'required|numeric|min:1',
             'endDistance' => 'required|numeric|min:1|gt:startDistance',
             'fuelVolume' => 'required|numeric|min:1',
@@ -78,6 +81,7 @@ class FuelLogEntryController extends Controller
         # The second parameter (null) is what the variable
         # will be set to *if* the value is not in the request.
 
+        $fillupDate = $request->input('fillupDate', Carbon::now());
         $startDistance = $request->input('startDistance', null);
         $endDistance = $request->input('endDistance', null);
         $fuelVolume = $request->input('fuelVolume', null);
@@ -85,34 +89,22 @@ class FuelLogEntryController extends Controller
         $volumeUnit = $request->input('volumeUnit', null);
         $addLog = $request->input('addLog', null);
 
-        #If startDistance, endDistance and fuelVolume are not null and the request has no errors calculate fuel consumed
-        $distance = 0;
-        $fuelConsumed = 0;
-        if (!$request->hasErrors && $startDistance && $endDistance && $fuelVolume) {
-            #calculate fuel consumed - this is intentionally without units so you could calculate miles/liter if desired
-            $distance = (float)number_format($endDistance - $startDistance, 1, '.', '');
-            $fuelConsumed = (float)number_format($distance / $fuelVolume, 1, '.', '');
-        }
-
-        #If the add log checkbox is checked add the data to the fuel log entries table
-        #Note this checkbox is only visible if the user has registered and is logged in
+        # If the add log checkbox is checked add the data to the fuel log entries table
+        # Note this checkbox is only visible if the user has registered and is logged in
         if ($addLog == "on") {
-            #save the entry to the fuel log entries table
-            $user = $request->user();
-            $fuelLog = new FuelLogEntry();
-            $fuelLog->fillup_date = Carbon::now();
-            $fuelLog->start_distance = $startDistance;
-            $fuelLog->end_distance = $endDistance;
-            $fuelLog->distance_units = $distanceUnit;
-            $fuelLog->fuel_volume = $fuelVolume;
-            $fuelLog->fuel_units = $volumeUnit;
-            $fuelLog->user_id = $user->id;
 
-            # Invoke the Eloquent `save` method to generate a new row in the
-            # `fuel logs` table, with the above data
-            $fuelLog->save();
+            $action = new StoreFuelLogEntry($request->only('fillupDate', 'startDistance', 'endDistance', 'fuelVolume', 'distanceUnit', 'volumeUnit'), $request->user());
 
             return redirect('/fuelConsumptionCalculator/get-fuel-log');
+        }
+
+        #If startDistance, endDistance and fuelVolume are not null and the request has no errors calculate fuel consumed
+        $distance = $endDistance - $startDistance;
+        $fuelConsumed = '';
+
+        if (!is_null($startDistance) && !is_null($endDistance) && !is_null($fuelVolume)) {
+            $fuelCalculation = new FuelConsumptionCalculation($request->only('fillupDate', 'startDistance', 'endDistance', 'distanceUnit', 'fuelVolume', 'volumeUnit'), $request->user());
+            $fuelConsumed = $fuelCalculation->fuel_consumed;
         }
 
         # If the user did not login just perform the calculation and return to the form
@@ -120,13 +112,15 @@ class FuelLogEntryController extends Controller
         return redirect('/fuelConsumptionCalculator/show-form')->with([
             'fuelConsumed' => $fuelConsumed,
             'distance' => $distance,
+            'fillupDate' => $fillupDate,
             'startDistance' => $startDistance,
             'endDistance' => $endDistance,
             'fuelVolume' => $fuelVolume,
-            'distanceUnit' => $request->get('distanceUnit'),
-            'volumeUnit' => $request->get('volumeUnit'),
+            'distanceUnit' => $distanceUnit,
+            'volumeUnit' => $volumeUnit,
         ]);
     }
+
     /*
     *  /fuelConsumptionCalculator/get-fuel-log
     * GET fuel log entries for logged in user
@@ -144,12 +138,19 @@ class FuelLogEntryController extends Controller
 
         # get fuel log entries for logged in user
         # get distance and fuel consumption as calculated columns
-        if($user != null) {
+        if ($user != null) {
             $log = $user->fuel_log_entries()->select(['*', \DB::raw('(end_distance-start_distance) AS distance, (end_distance-start_distance/fuel_volume) AS fuel_consumed')])->get();
-            $totalDistance = $log->sum('distance');
-            $totalFuel = $log->sum('fuel_volume');
-            $average = (float)number_format($totalDistance / $totalFuel, 1, '.', '');
+            if (count($log) > 0) {
+                $totalDistance = $log->sum('distance');
+                $totalFuel = $log->sum('fuel_volume');
+                $average = (float)number_format($totalDistance / $totalFuel, 1, '.', '');
+            } else {
+                # if not log entries are found
+                return redirect('/')->with(['alert' => 'Fuel Log is empty, use form below to start a log',
+                ]);
+            }
         }
+
         # view fuel log entries for the logged in user
         return view('fuelConsumptionCalculator.viewLog')->with([
             'fuelLog' => $log,
@@ -166,15 +167,18 @@ class FuelLogEntryController extends Controller
     {
         $fuelLogEntry = FuelLogEntry::find($id);
 
+        # check if the entry was found and that the current logged in user is authorized to update this entry
+        # if not redirect back to fuel log if not found and to form if not authorized
         if (!$fuelLogEntry) {
             return redirect('/fuelConsumptionCalculator/get-fuel-log')->with([
-                'alert' => '“Fuel log entry not found.'
+                'alert' => 'Fuel log entry not found.'
             ]);
         }
         if (!Gate::allows('fuelLogEntries.manage', $fuelLogEntry)) {
             return redirect('/')->with(['alert' => 'Access denied.']);
         }
 
+        # if the logged in user is authorized and the record with the passed submit the form
         return view('fuelConsumptionCalculator.edit')->with([
             'fuelLogEntry' => $fuelLogEntry,
         ]);
@@ -187,27 +191,25 @@ class FuelLogEntryController extends Controller
     {
         # Validate the form request
         $request->validate([
+            'fillupDate' => 'required|date',
             'startDistance' => 'required|numeric|min:1',
             'endDistance' => 'required|numeric|min:1|gt:startDistance',
             'fuelVolume' => 'required|numeric|min:1',
             'distanceUnit' => 'required',
             'volumeUnit' => 'required'
         ]);
+        # get the fuel log entry
+        $fuelLogEntry = FuelLogEntry::find($id);
 
         # get the logged in user
         $user = $request->user();
 
-        $fuelLogEntry = FuelLogEntry::find($id);
-        $fuelLogEntry->start_distance = $request->get('startDistance');
-        $fuelLogEntry->end_distance = $request->get('endDistance');
-        $fuelLogEntry->distance_units = $request->get('distanceUnit');
-        $fuelLogEntry->fuel_volume = $request->get('fuelVolume');
-        $fuelLogEntry->fuel_units = $request->get('volumeUnit');
-        $fuelLogEntry->user_id = $user->id;
-        $fuelLogEntry->save();
+        # perform the update
+        $action = new UpdateFuelLogEntry($request->only('fillupDate', 'startDistance', 'endDistance', 'fuelVolume', 'distanceUnit', 'volumeUnit'), $fuelLogEntry, $request->user());
 
+        # redirect to fuel log with message reflecting the record was updated
         return redirect('/fuelConsumptionCalculator/get-fuel-log')->with([
-            'alert' => 'Fuel log entry for date '. $fuelLogEntry->fillup_date . ' was updated.'
+            'alert' => 'Fuel log entry for date ' . $action->fillup_date . ' was updated.'
         ]);
     }
 
@@ -218,55 +220,45 @@ class FuelLogEntryController extends Controller
     public function delete($id)
     {
         $fuelLogEntry = FuelLogEntry::find($id);
+        # if the entry with the passed is not found  return to the fuel log with message not found
+        # if or the current logged in user is not authorized to delete redirect to the form with error message
         if (!$fuelLogEntry) {
             return redirect('/fuelConsumptionCalculator.viewLog')->with(['alert' => 'Fuel log entry not found']);
         }
         if (!Gate::allows('fuelLogEntries.manage', $fuelLogEntry)) {
             return redirect('/')->with(['alert' => 'Access denied.']);
         }
+        # if record is found and the currently logged in user is authorized to delete, delete this record
         return view('fuelConsumptionCalculator.delete')->with([
             'fuelLogEntry' => $fuelLogEntry,
         ]);
     }
+
     /*
     * Deletes a fuel log entry
     * DELETE /fuelConsumptionCalculator/delete-fuel-log-entry/{id}
     */
     public function destroy($id)
     {
+        # find the record
         $fuelLogEntry = FuelLogEntry::find($id);
+        # save the fillup date for the return message before deleting
         $fillupDate = $fuelLogEntry->fillup_date;
+        # delete the recored
         $fuelLogEntry->delete();
         return redirect('/fuelConsumptionCalculator/get-fuel-log')->with([
             'alert' => 'Fuel log entry for date ' . $fillupDate . ' was removed.'
         ]);
     }
+
     /*
     * Exports a users  fuel log to excel
     * /export
     */
     public function export()
     {
+        #export a view of the fuel log
         return Excel::download(new FuelLogEntriesExport, 'FuelLog.xlsx');
-    }
-
-    function excel()
-    {
-        #get fuel log entries for the logged in user
-        $fuel_log_entries = Auth::user()->fuel_log_entries()->select(['*', \DB::raw('(end_distance-start_distance) AS distance, ((end_distance-start_distance)/fuel_volume) AS fuel_consumed')])->get();
-
-        #create an array of the datea
-        foreach($fuel_log_entries as $fuel_log_entry)
-        {
-            $fuel_log_array[] = array(
-                'Date'  => $fuel_log_entry->fillup_date,
-                'Distance'   => $fuel_log_entry->distance,
-                'Fuel'    => $fuel_log_entry->fuel_volume,
-                'Fuel Consumption'  => $fuel_log_entry->fuel_consumed,
-            );
-        }
-        #use the excel facade to download the fuel log as excel
-        Excel::download($fuel_log_array,'FuelLog.xlsx');
     }
 }
 

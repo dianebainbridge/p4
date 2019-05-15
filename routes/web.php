@@ -9,8 +9,8 @@ Route::view('/contact', 'contact');
  * Fuel Consumption Calculator
  */
 #Show the form view
-Route::view('/form', 'fuelConsumptionCalculator.form');
 Route::get('/', 'FuelLogEntryController@showForm');
+Route::view('/form', 'fuelConsumptionCalculator.form');
 Route::get('/fuelConsumptionCalculator/show-form', 'FuelLogEntryController@showForm');
 
 #Process the form
@@ -19,11 +19,11 @@ Route::post('/fuelConsumptionCalculator/form-process', 'FuelLogEntryController@f
 # require login for routes that access and update the fuel log
 Route::group(['middleware' => 'auth'], function () {
 
-    #show the log
-    Route::view('/viewLog', 'fuelConsumptionCalculator.viewLog');
-
     #get the fuel Log
     Route::get('/fuelConsumptionCalculator/get-fuel-log', 'FuelLogEntryController@getFuelLog');
+
+    #show the log
+    Route::view('/viewLog', 'fuelConsumptionCalculator.viewLog');
 
     # Edit a fuel log entry in the fuel log entries table
     # Show the edit form for the fuel log entry with "id"
@@ -41,7 +41,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::view('/log-out', 'fuelConsumptionCalculator.logout');
 
     #export to excel
-    Route::get('/export','FuelLogEntryController@export');
+    Route::get('/export', 'FuelLogEntryController@export');
 
 });
 # routes associated with authentication

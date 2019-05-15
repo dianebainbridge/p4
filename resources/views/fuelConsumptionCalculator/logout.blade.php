@@ -16,7 +16,9 @@
         <form method='POST' id='logout' action='/logout'>
             {{ csrf_field() }}
             <ul style="list-style:none">
-                <li><i class="fas fa-sign-out-alt"></i> <a href='#' onClick='document.getElementById("logout").submit();'>Yes</a></li>
+                <li><i class="fas fa-sign-out-alt"></i> <a href='#'
+                                                           onClick='document.getElementById("logout").submit();'>Yes</a>
+                </li>
                 <li><i class="fas fa-undo"></i> <a href='/'>No</a></li>
             </ul>
         </form>

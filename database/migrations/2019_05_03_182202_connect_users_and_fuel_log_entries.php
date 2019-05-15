@@ -31,7 +31,7 @@ class ConnectUsersAndFuelLogEntries extends Migration
         Schema::table('fuel_log_entries',function (Blueprint $table)
         {
             #add user_id field to table as foreign key
-            $table->dropForeign('fuel_log-entries_user_id_foreign');
+            $table->dropForeign('fuel_log_entries_user_id_foreign');
             $table->dropColumn('user_id');
         });
     }

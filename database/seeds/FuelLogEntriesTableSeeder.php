@@ -16,14 +16,14 @@ class FuelLogEntriesTableSeeder extends Seeder
     {
         # Array of fuel log entries to add
         $fuel_log_entries = [
-            [Carbon::now(),10,'gallon',23000,27000,'miles','diane.bainbridge@gmail.com'],
-            [Carbon::now(),12,'gallon',35000,370520,'miles','diane.bainbridge@gmail.com'],
+            [Carbon::now()->subDays(21)->toDateTimeString(), 10, 'gallon', 23000, 27000, 'miles', 'diane.bainbridge@gmail.com'],
+            [Carbon::now(), 12, 'gallon', 35000, 370520, 'miles', 'diane.bainbridge@gmail.com'],
+            [Carbon::now(), 8, 'liter', 42505, 46341, 'kilometers', 'jamal@harvard.edu'],
         ];
-        $count =count($fuel_log_entries);
+        $count = count($fuel_log_entries);
 
         #Loop through entries and add to database
-        foreach($fuel_log_entries as $key => $fuelLogEntryData)
-        {
+        foreach ($fuel_log_entries as $key => $fuelLogEntryData) {
             #get the user id of the user with the username entered
             $user_id = User::where('email', '=', $fuelLogEntryData[6])->pluck('id')->first();
             $fuelLogEntry = new FuelLogEntry();
@@ -38,7 +38,7 @@ class FuelLogEntriesTableSeeder extends Seeder
             $fuelLogEntry->user_id = $user_id;
 
             $fuelLogEntry->save();
-            $count --;
+            $count--;
         }
     }
 }

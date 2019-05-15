@@ -239,7 +239,6 @@ return [
 
     'nav' => [
         'about' => 'About',
-        'fuelConsumptionCalculator/get-fuel-log' => 'View Log',
         'contact' => 'Contact',
     ],
     /*

@@ -19,7 +19,7 @@
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="/#"><i class="fas fa-gas-pump"></i>&#160;{{ config('app.name') }}</a>
+                <a class="navbar-brand" href="/"><i class="fas fa-gas-pump"></i>&#160;{{ config('app.name') }}</a>
             </div>
             <ul class="nav navbar-nav">
                 <!--loop code from Susan Buck foobooks application-->
@@ -36,7 +36,13 @@
                 @endforeach
                 <li>
                     @if(Auth::check())
+                        <a href='/fuelConsumptionCalculator/get-fuel-log'>View Log</a>
+                    @endif
+                </li>
+                <li>
+                    @if(Auth::check())
                         <a href='/log-out' target="_blank">Logout</a>
+
                     @else
                         <a href='/login' target="_blank">Login</a>
                     @endif

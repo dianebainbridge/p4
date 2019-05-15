@@ -17,6 +17,14 @@
                 {{ csrf_field() }}
                 {{ method_field('put') }}
                 <div class="form-group">
+                    <i class="fas fa-calendar-day"></i><!--fontawesome kind of odometer icon-->
+                    <label for="fillupDate">Date of fill-up </label>
+                    <input id="fillupDate" name="fillupDate" type="date"
+                           value="{{ old('fillupDate',$fuelLogEntry->fillup_date) }}"/>
+                    {{-- Display the first error if there are any fof this input --}}
+                    @include('includes.error-field', ['fieldName' => 'fillupDate'])
+                </div>
+                <div class="form-group">
                     <i class="fas fa-tachometer-alt"></i><!--fontawesome kind of odometer icon-->
                     <label for="startDistance">Odometer reading - last fill-up </label>
                     <input id="startDistance" name="startDistance" type="number" value="{{ old('startDistance',$fuelLogEntry->start_distance) }}"/>
