@@ -45,10 +45,9 @@ class FuelLogEntryController extends Controller
 
         if (!is_null($user)) {
             # if not start distance has been entered use last end distance as start distance
-            if ($startDistance == '') {
-                $action = new LastDistanceEntered($user);
-                $startDistance = $action->getLastEndDistance();
-            }
+            $action = new LastDistanceEntered($user);
+            if(count($action->getLastEndDistance())>0)
+                $startDistance = $action->getLastEndDistance()[0];
         }
 
         # default to todays date

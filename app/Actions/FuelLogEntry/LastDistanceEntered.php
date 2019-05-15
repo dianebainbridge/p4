@@ -20,7 +20,7 @@ class LastDistanceEntered
     {
         if (!is_null($this->userId)) {
             $this->lastEndDistance = FuelLogEntry::orderBy('created_at', 'desc')->where('user_id', '=', $this->userId)->limit(1)->pluck('end_distance');
-            $this->lastEndDistance;
+            return $this->lastEndDistance;
         }
     }
 }
