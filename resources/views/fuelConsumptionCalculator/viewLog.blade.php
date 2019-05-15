@@ -40,7 +40,7 @@
                 <tr>
                     <td></td>
                     <td>{{$totalDistance}} {{$logEntry['distance_units'] }}</td>
-                    <td>{{$totalFuel}} {{ $logEntry['fuel_units' ]}}</td>
+                    <td>{{$totalFuel}} {{ $logEntry['fuel_units' ]}}s</td>
                     <td>{{$average}}  {{$logEntry['distance_units'] }}/{{ $logEntry['fuel_units' ]}}</td>
                     <td></td>
                 </tr>

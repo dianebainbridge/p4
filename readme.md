@@ -21,6 +21,6 @@
 ## Code style divergences
 + My Exports class contains a sql query that spans mor than one line.  
 I tried to use alt enter to split the line in several different places but the query kept breaking.
-
++ I used inline javascript for the Cancel button on the Edit page
 ## Notes for instructor
 Thanks for a great class!

@@ -67,7 +67,6 @@
                             Gallons
                         </option>
                         <option value="liter" {{ (old('volumeUnit',$fuelLogEntry->fuel_units)=="liter") ? 'selected' : '' }} >
-                        >
                             Liters
                         </option>
                     </select>
@@ -75,6 +74,7 @@
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Update</button>
+                    &#160;<button class="btn btn-primary" onclick="window.replace('/fuelConsumptionCalculator/get-fuel-log')">Cancel</button>
                 </div>
                 {{-- Display the fuel calculation if there are no errors or the erorrs if there are errors--}}
                 <div class="outcome">
