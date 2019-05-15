@@ -44,9 +44,16 @@ class FuelLogEntryController extends Controller
         $user = $request->user();
 
         if (!is_null($user)) {
-            $action = new LastDistanceEntered($user);
-            $startDistance = $action->getLastEndDistance();
+            # if not start distance has been entered use last end distance as start distance
+            if ($startDistance == '') {
+                $action = new LastDistanceEntered($user);
+                $startDistance = $action->getLastEndDistance();
+            }
         }
+
+        # default to todays date
+        if($fillupDate == '')
+            $fillupDate = Carbon::now()->format('Y-m-d');
 
         # return the form view with these value
         return view('fuelConsumptionCalculator.form')->with([

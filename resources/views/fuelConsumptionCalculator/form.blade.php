@@ -79,7 +79,7 @@
                     @include('includes.error-field', ['fieldName' => 'fuelVolume'])
                 </div>
                 <div class="form-group">
-                    <label for="volumeUnit">Select option</label>
+                    <label for="volumeUnit">Select volume units</label>
                     <select id="volumeUnit" name="volumeUnit" class="custom-select volumeUnit">
                         <option value="">&#160;</option>
                         <option value="gallon" {{ (old('volumeUnit',$volumeUnit)=="gallon") ? 'selected' : '' }} >
