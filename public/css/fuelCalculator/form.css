@@ -26,6 +26,7 @@ input {
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     color: #337ab7 !important;
     text-align:right;
+    padding-right: 7px !important;
 }
 
 input[type=checkbox],

@@ -19,8 +19,8 @@
                 <div class="form-group">
                     <i class="fas fa-calendar-day"></i><!--fontawesome kind of odometer icon-->
                     <label for="fillupDate">Date of fill-up </label>
-                    <input id="fillupDate" name="fillupDate" type="date"
-                           value="{{ old('fillupDate',$fuelLogEntry->fillup_date) }}"/>
+                    <input id="fillupDate" name="fillupDate" type="text"
+                           value="{{ old('fillupDate',$fuelLogEntry->fillup_date) }}"/>&#160;Format yyyy-mm-dd
                     {{-- Display the first error if there are any fof this input --}}
                     @include('includes.error-field', ['fieldName' => 'fillupDate'])
                 </div>

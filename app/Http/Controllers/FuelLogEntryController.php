@@ -75,7 +75,7 @@ class FuelLogEntryController extends Controller
     {
         # Validate the form request
         $request->validate([
-            'fillupDate' => 'required|date',
+            'fillupDate' => 'date_format:"Y-m-d"|required',
             'startDistance' => 'required|numeric|min:1|max:900000',
             'endDistance' => 'required|numeric|min:1|max:999999|gt:startDistance',
             'fuelVolume' => 'required|numeric|min:1|max:1000',
@@ -197,7 +197,7 @@ class FuelLogEntryController extends Controller
     {
         # Validate the form request
         $request->validate([
-            'fillupDate' => 'required|date',
+            'fillupDate' => 'date_format:"Y-m-d"|required',
             'startDistance' => 'required|numeric|min:1|max:900000',
             'endDistance' => 'required|numeric|min:1|gt:startDistance|max:999999',
             'fuelVolume' => 'required|numeric|min:1|max:1000',
